@@ -66,9 +66,9 @@
         return auth_ldap_check($config, $username, $password);
     }
     
-    function ldap_auth_check($provider, $username, $password)
+    function ldap_auth_check($config, $username, $password)
     {
-        $host        = $provider['host'];
+        $host        = $config->host;
         
         // No point continuing
         if(empty($host))
@@ -129,17 +129,17 @@
             		// LDAP login successful
 
                 	// If a user should get created, do it here
-                	if ($user_create)
+                    if ($user_create)
                 	{
-                	    $name  = $ldap_user_info['firstname'];
+                        $name  = $ldap_user_info['firstname'];
                 	    if (isset($ldap_user_info['lastname']))
                 	    {
                 	        $name  = $name . " " . $ldap_user_info['lastname'];
-                	    }
+                        }
                         $email = $ldap_user_info['mail'];
-                	    
-                	    register_user($username, $password, $name, $email);
-                	}
+
+                        register_user($username, $password, $name, $email);
+                    }
 
             	    // Close the connection
                 	ldap_close($ds);
