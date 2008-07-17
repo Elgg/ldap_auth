@@ -20,8 +20,12 @@
 	 */
 	function ldap_auth_init()
 	{
+	    global $CONFIG;
+	    
 	    // Register the authentication handler
-	    register_pam_handler('ldap_auth_authenticate');	    
+	    register_pam_handler('ldap_auth_authenticate');
+
+        register_translations($CONFIG->pluginspath . "ldap_auth/languages/");
 	}
 	
 	// Register the initialisation function
@@ -38,9 +42,9 @@
         // Nothing to do if LDAP module not installed
         if (!function_exists('ldap_connect')) return false;
         
-        // Get configuration settings
-        $config = get_config('ldap_auth:settings');
-
+        // Get configuration seproviderttings
+        $config = find_plugin_settings('ldap_auth');
+        
         // Nothing to do if not configured
         if (!$config) return false;
         
@@ -59,36 +63,36 @@
         }
         
         // Perform the authentication
-        foreach ($config as $provider)
-        {
-            if (auth_ldap_check($provider, $username, $password)) break;
-        }
+        return auth_ldap_check($config, $username, $password);
     }
     
     function ldap_auth_check($provider, $username, $password)
     {
         $host        = $provider['host'];
         
-        // No point continueing
+        // No point continuing
         if(empty($host))
         {
             error_log("LDAP: no host configured.");
             return;
         }
         
-        $port        = $provider['port'];
-        $version     = $provider['version'];
-        $ds          = $provider['ds'];
-        $basedn      = $provider['basedn'];
-        $filter_attr = $provider['filter_attr'];
-        $search_attr = $provider['search_attr'];
-        $bind_dn     = $provider['bind_dn'];
-        $bind_pwd    = $provider['bind_pwd'];
+        $port        = $config->port;
+        $version     = $config->version;
+        $ds          = $config->ds;
+        $basedn      = $config->basedn;
+        $filter_attr = $config->filter_attr;
+        $search_attr = $config->search_attr;
+        $bind_dn     = $config->bind_dn;
+        $bind_pwd    = $config->bind_pwd;
+        $user_create = $config->user_create;
+        
+        ($user_create == 'on') ? $user_create = true : $user_create = false;
 
         $port        ? $port                      : $port = 389;
         $version     ? $version                   : $version = 3;
-        $basedn      ? $basedn = explode($basedn) : $basedn = array();
         $filter_attr ? $filter_attr               : $filter_attr = 'uid';
+        $basedn      ? $basedn = array_map('trim', explode(':', $basedn)) : $basedn = array();
         
         if (!empty($search_attr))
         {
@@ -100,12 +104,12 @@
             
             foreach ($pairs as $pair)
             {
-                $parts = explode(':', $pair);
+                $parts = array_map('trim', explode(':', $pair));
         
                 $values[$parts[0]] = $parts[1];
             }
         
-            $search_attr = $values;            
+            $search_attr = $values;
         }
         else
         {
@@ -123,9 +127,20 @@
             	if($ldap_user_info)
             	{
             		// LDAP login successful
-    
+
                 	// If a user should get created, do it here
-    
+                	if ($user_create)
+                	{
+                	    $name  = $ldap_user_info['firstname'];
+                	    if (isset($ldap_user_info['lastname']))
+                	    {
+                	        $name  = $name . " " . $ldap_user_info['lastname'];
+                	    }
+                        $email = $ldap_user_info['mail'];
+                	    
+                	    register_user($username, $password, $name, $email);
+                	}
+
             	    // Close the connection
                 	ldap_close($ds);
     
