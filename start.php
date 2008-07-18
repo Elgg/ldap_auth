@@ -79,7 +79,6 @@
         
         $port        = $config->port;
         $version     = $config->version;
-        $ds          = $config->ds;
         $basedn      = $config->basedn;
         $filter_attr = $config->filter_attr;
         $search_attr = $config->search_attr;
@@ -128,19 +127,33 @@
             	{
             		// LDAP login successful
 
-                	// If a user should get created, do it here
-                    if ($user_create)
-                	{
-                        $name  = $ldap_user_info['firstname'];
-                	    if (isset($ldap_user_info['lastname']))
-                	    {
-                	        $name  = $name . " " . $ldap_user_info['lastname'];
-                        }
-                        $email = $ldap_user_info['mail'];
-
-                        register_user($username, $password, $name, $email);
-                    }
-
+            	    if ($user = get_user_by_username($username))
+            	    {
+            	        // User exists, login            	        
+            	        return login($user);
+            	    }
+            	    else
+            	    {
+            	        // Valid login but user doesn't exist
+            	        
+            	        if ($user_create)
+            	        {
+                            $name  = $ldap_user_info['firstname'];
+                    	    if (isset($ldap_user_info['lastname']))
+                    	    {
+                    	        $name  = $name . " " . $ldap_user_info['lastname'];
+                            }
+                            $email = $ldap_user_info['mail'];
+    
+                            register_user($username, $password, $name, $email);
+                            
+                            // No fully registered user yet, return false
+                            return false;
+            	        }
+            	        
+            	        return false;
+            	    }
+            	    
             	    // Close the connection
                 	ldap_close($ds);
     
