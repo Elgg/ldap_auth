@@ -42,7 +42,7 @@
         // Nothing to do if LDAP module not installed
         if (!function_exists('ldap_connect')) return false;
 
-        // Get configuration seproviderttings
+        // Get configuration settings
         $config = find_plugin_settings('ldap_auth');
         
         // Nothing to do if not configured
@@ -53,7 +53,6 @@
         
         $username      = null;
         $password      = null;
-        $authenticated = false;
         
         if (is_array($credentials) && ($credentials['username']) && ($credentials['password']))
         {
@@ -99,9 +98,9 @@
         
         ($user_create == 'on') ? $user_create = true : $user_create = false;
 
-        $port        ? $port                      : $port = 389;
-        $version     ? $version                   : $version = 3;
-        $filter_attr ? $filter_attr               : $filter_attr = 'uid';
+        $port        ? $port        : $port = 389;
+        $version     ? $version     : $version = 3;
+        $filter_attr ? $filter_attr : $filter_attr = 'uid';
         $basedn      ? $basedn = array_map('trim', explode(':', $basedn)) : $basedn = array();
         
         if (!empty($search_attr))
@@ -156,41 +155,42 @@
                     	        $name  = $name . " " . $ldap_user_info['lastname'];
                             }
                             
-                            if (!isset($ldap_user_info['mail']))
+                            ($ldap_user_info['mail']) ? $email = $ldap_user_info['mail'] : $email = null;
+
+                            if ($user_guid = register_user($username, $password, $name, $email))
                             {
-                                error_log("LDAP error, no email address found for registration.");
+                                // default email based validation for now
+                                if (request_email_validation($user_guid))
+                                {
+                                    // we need to return false since the account hasn't been validated yet
+                                    // and append the success message to the error flash
+                                    register_error(elgg_echo('registerok'));
+                                    
+                                    return false;
+                                }
                                 
                                 return false;
-                            }
-                            
-                            $email = $ldap_user_info['mail'];
-    
-                            if (register_user($username, $password, $name, $email))
-                            {
-                                system_message(elgg_echo("ldap_auth:account_created"));
                             }
                             else
                             {
-                                register_error(elgg_echo("auth_ldap:no_register"));
+                                register_error(elgg_echo('ldap_auth:no_register'));
                                 
                                 return false;
                             }
-                            
-                            // No fully registered user yet, return false?
-                            return false;
             	        }
             	        else
             	        {
             	            register_error(elgg_echo("ldap_auth:no_account"));
+            	            
+            	            return false;
             	        }
-            	        
-            	        return false;
             	    }
-            	    
-            	    // Close the connection
-                	ldap_close($ds);
-    
-    	            return true;
+    			}
+    			else
+    			{
+        			ldap_close($ds);
+        			
+        			return false;
     			}
             }
     

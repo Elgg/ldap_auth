@@ -34,7 +34,6 @@
         'ldap_auth:settings:label:user_create' => "Create users",
         'ldap_auth:settings:help:user_create' => "Optionally, an account can get created when a LDAP authentication was succesful.",
         'ldap_auth:no_account' => "Your credentials are valid, but no account was found - please contact the system administrator",
-        'ldap_auth:account_created' => "An account has been created for you, please login with any details you have received.",
         'ldap_auth:no_register' => 'An account could not get created for you - please contact the system administrator.'
     );
     
