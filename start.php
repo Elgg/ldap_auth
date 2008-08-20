@@ -159,6 +159,9 @@
 
                             if ($user_guid = register_user($username, $password, $name, $email))
                             {
+                                /* 
+                                 * skip validation 
+                                 * 
                                 // default email based validation for now
                                 if (request_email_validation($user_guid))
                                 {
@@ -168,8 +171,9 @@
                                     
                                     return false;
                                 }
+								*/                               
                                 
-                                return false;
+                                return true;
                             }
                             else
                             {
