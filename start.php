@@ -159,20 +159,7 @@
 
                             if ($user_guid = register_user($username, $password, $name, $email))
                             {
-                                /* 
-                                 * skip validation 
-                                 * 
-                                // default email based validation for now
-                                if (request_email_validation($user_guid))
-                                {
-                                    // we need to return false since the account hasn't been validated yet
-                                    // and append the success message to the error flash
-                                    register_error(elgg_echo('registerok'));
-                                    
-                                    return false;
-                                }
-								*/                               
-                                
+                                // Success, credentials valid and account has been created                                
                                 return true;
                             }
                             else
