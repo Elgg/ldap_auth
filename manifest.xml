@@ -4,6 +4,6 @@
         <field key="version" value="0.1" />
         <field key="description" value="Provides LDAP authentication" />
         <field key="website" value="http://www.elgg.org/" />
-        <field key="copyright" value="(C) Curverider 2008" />
+        <field key="copyright" value="(C) Curverider 2008-2009" />
         <field key="licence" value="GNU Public License version 2" />
 </plugin_manifest>
