@@ -1,22 +1,21 @@
 <?
     /**
 	 * Elgg LDAP authentication
-	 * 
+	 *
 	 * @package ElggLDAPAuth
 	 * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU Public License version 2
-	 * @author Misja Hoebe <misja@elgg.com>
-	 * @copyright Curverider Ltd 2008-2009
-	 * @link http://elgg.com
+	 * @author Misja Hoebe <misja.hoebe@gmail.com>
+	 * @link http://community.elgg.org/pg/profile/misja
 	 */
 ?>
 <p>
     <fieldset style="border: 1px solid; padding: 15px; margin: 0 10px 0 10px">
         <legend><?php echo elgg_echo('ldap_auth:settings:label:host');?></legend>
-        
+
         <label for="params[hostname]"><?php echo elgg_echo('ldap_auth:settings:label:hostname');?></label><br/>
         <div class="example"><?php echo elgg_echo('ldap_auth:settings:help:hostname');?></div>
         <input type="text" name="params[hostname]" value="<?php echo $vars['entity']->hostname;?>"/><br/>
-        
+
         <label for="params[port]"><?php echo elgg_echo('ldap_auth:settings:label:port');?></label><br/>
         <div class="example"><?php echo elgg_echo('ldap_auth:settings:help:port');?></div>
         <input type="text" name="params[port]" value="<?php if (empty($vars['entity']->port)) {echo "389";} else {echo $vars['entity']->port;}?>"/><br/>
