@@ -23,8 +23,6 @@
 
         // Register the authentication handler
         register_pam_handler('ldap_auth_authenticate');
-
-        register_translations($CONFIG->pluginspath . "ldap_auth/languages/");
     }
 
     // Register the initialisation function
