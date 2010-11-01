@@ -30,6 +30,7 @@ register_elgg_event_handler('init','system','ldap_auth_init');
 function ldap_auth_authenticate($credentials = null) {
 	// Nothing to do if LDAP module not installed
 	if (!function_exists('ldap_connect')) {
+		error_log("LDAP error: no ldap extension for php");
 		return false;
 	}
 
@@ -38,6 +39,7 @@ function ldap_auth_authenticate($credentials = null) {
 
 	// Nothing to do if not configured
 	if (!$config) {
+		error_log("LDAP error: unable to find configuration");
 		return false;
 	}
 
@@ -48,6 +50,7 @@ function ldap_auth_authenticate($credentials = null) {
 		$username = utf8_encode($credentials['username']);
 		$password = utf8_encode(html_entity_decode($credentials['password']));
 	} else {
+		error_log("LDAP error: we did not get both a username and a password");
 		return false;
 	}
 
@@ -69,7 +72,7 @@ function ldap_auth_check($config, $username, $password) {
 	// No point continuing
 	if (empty($host)) {
 		error_log("LDAP error: no host configured.");
-		return;
+		return false;
 	}
 
 	$port        = $config->port;
@@ -108,62 +111,61 @@ function ldap_auth_check($config, $username, $password) {
 
 	// Create a connection
 	$ds = ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd);
-	if ($ds) {
-		// Perform a search
-		foreach ($basedn as $this_ldap_basedn) {
-			$ldap_user_info = ldap_auth_do_auth($ds, $this_ldap_basedn, $username, $password, $filter_attr, $search_attr);
-
-			if($ldap_user_info) {
-				// LDAP login successful
-
-				$user = get_user_by_username($username);
-				if ($user) {
-					// User exists, login
-					return login($user);
-				} else {
-					// Valid login but user doesn't exist
-
-					if ($user_create) {
-						$name  = $ldap_user_info['firstname'];
-
-						if (isset($ldap_user_info['lastname'])) {
-							$name  = $name . " " . $ldap_user_info['lastname'];
-						}
-
-						($ldap_user_info['mail']) ? $email = $ldap_user_info['mail'] : $email = null;
-
-						$guid = register_user($username, $password, $name, $email);
-						if ($guid) {
-							// Registration successful, validate the user
-							set_user_validation_status($guid, true, 'LDAP plugin based validation');
-
-							// Success, credentials valid and account has been created
-							return true;
-						} else {
-							register_error(elgg_echo('ldap_auth:no_register'));
-
-							return false;
-						}
-					} else {
-						register_error(elgg_echo("ldap_auth:no_account"));
-
-						return false;
-					}
-				}
-			} else {
-				ldap_close($ds);
-
-				return false;
-			}
-		}
-
-		// Close the connection
-		ldap_close($ds);
-
-		return false;
-	} else {
+	if (!$ds) {
+		error_log("LDAP error: unable to connect to the LDAP server");
 		return false;
 	}
+
+	// Perform a search
+	foreach ($basedn as $this_ldap_basedn) {
+		$ldap_user_info = ldap_auth_do_auth($ds, $this_ldap_basedn, $username, $password, $filter_attr, $search_attr);
+
+		if ($ldap_user_info) {
+			// LDAP login successful
+
+			$user = get_user_by_username($username);
+			if ($user) {
+				// User exists, login
+				ldap_close($ds);
+				return login($user);
+			} else {
+				// Valid login but user doesn't exist
+
+				if ($user_create) {
+					$name  = $ldap_user_info['firstname'];
+
+					if (isset($ldap_user_info['lastname'])) {
+						$name  = $name . " " . $ldap_user_info['lastname'];
+					}
+
+					($ldap_user_info['mail']) ? $email = $ldap_user_info['mail'] : $email = null;
+
+					$guid = register_user($username, $password, $name, $email);
+					if ($guid) {
+						// Registration successful, validate the user
+						set_user_validation_status($guid, true, 'LDAP plugin based validation');
+
+						// Success, credentials valid and account has been created
+						ldap_close($ds);
+						return true;
+					} else {
+						register_error(elgg_echo('ldap_auth:no_register'));
+						error_log('LDAP: failed to make account for ' . $username);
+						ldap_close($ds);
+						return false;
+					}
+				} else {
+					error_log("LDAP warning: not creating an account for $username due to configuration");
+					register_error(elgg_echo("ldap_auth:no_account"));
+					ldap_close($ds);
+					return false;
+				}
+			}
+		}
+	}
+
+	ldap_close($ds);
+	return false;
 }
 
 /**
@@ -179,31 +181,30 @@ function ldap_auth_check($config, $username, $password) {
 function ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd) {
 	$ds = ldap_connect($host, $port);
 
+	if ($ds === false) {
+		error_log('LDAP: unable to connect to the LDAP server: ' . ldap_error($ds));
+		return false;
+	}
+
 	ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, $version);
+
+	// this may be required for Windows AD
+	//ldap_set_option($ds, LDAP_OPT_REFERRALS, 0);
 
 	// Start the LDAP bind process
 
 	$ldapbind = null;
 
-	if ($ds) {
-		if ($bind_dn != '') {
-			$ldapbind = ldap_bind($ds, $bind_dn, $bind_pwd);
-		} else {
-			// Anonymous bind
-			$ldapbind = ldap_bind($ds);
-		}
+	if ($bind_dn != '') {
+		$ldapbind = ldap_bind($ds, $bind_dn, $bind_pwd);
 	} else {
-		// Unable to connect
-		error_log('Unable to connect to the LDAP server: '.ldap_error($ds));
-
-		return false;
+		// Anonymous bind
+		$ldapbind = ldap_bind($ds);
 	}
 
 	if (!$ldapbind) {
-		error_log('Unable to bind to the LDAP server with provided credentials: '.ldap_error($ds));
-
+		error_log('LDAP: Unable to bind to the LDAP server with provided credentials: ' . ldap_error($ds));
 		ldap_close($ds);
-
 		return false;
 	}
 
@@ -225,14 +226,14 @@ function ldap_auth_do_auth($ds, $basedn, $username, $password, $filter_attr, $se
 	$sr = ldap_search($ds, $basedn, $filter_attr . "=" . $username, array_values($search_attr));
 
 	if (!$sr) {
-		error_log('Unable to perform LDAP search: ' . ldap_error($ds));
-
+		error_log('LDAP: Unable to perform LDAP search: ' . ldap_error($ds));
 		return false;
 	}
 
 	$entry = ldap_get_entries($ds, $sr);
 
 	if (!$entry or !$entry[0]) {
+		error_log("LDAP: There is no record of a user with $filter_attr = $username ");
 		return false; // didn't find username
 	}
 
@@ -246,6 +247,9 @@ function ldap_auth_do_auth($ds, $basedn, $username, $password, $filter_attr, $se
 		}
 
 		return $ldap_user_info;
+	} else {
+		error_log('LDAP: password failed for ' . $username);
+		error_log('LDAP: error number was ' . ldap_errno($ds) . ' with message of ' . ldap_error($ds));
 	}
 
 	return false;
