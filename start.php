@@ -174,9 +174,9 @@ function ldap_auth_check($config, $username, $password) {
  * @return mixed LDAP link identifier on success, or false on error
  */
 function ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd) {
-	$ds = @ldap_connect($host, $port);
+	$ds = ldap_connect($host, $port);
 
-	@ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, $version);
+	ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, $version);
 
 	// Start the LDAP bind process
 
@@ -184,10 +184,10 @@ function ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd) {
 
 	if ($ds) {
 		if ($bind_dn != '') {
-			$ldapbind = @ldap_bind($ds, $bind_dn, $bind_pwd);
+			$ldapbind = ldap_bind($ds, $bind_dn, $bind_pwd);
 		} else {
 			// Anonymous bind
-			$ldapbind = @ldap_bind($ds);
+			$ldapbind = ldap_bind($ds);
 		}
 	} else {
 		// Unable to connect
@@ -219,7 +219,7 @@ function ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd) {
  * @return mixed array with search attributes or false on error
  */
 function ldap_auth_do_auth($ds, $basedn, $username, $password, $filter_attr, $search_attr) {
-	$sr = @ldap_search($ds, $basedn, $filter_attr ."=". $username, array_values($search_attr));
+	$sr = ldap_search($ds, $basedn, $filter_attr ."=". $username, array_values($search_attr));
 
 	if(!$sr) {
 		error_log('Unable to perform LDAP search: '.ldap_error($ds));
@@ -235,7 +235,7 @@ function ldap_auth_do_auth($ds, $basedn, $username, $password, $filter_attr, $se
 
 	// Username exists, perform a bind for testing credentials
 
-	if (@ldap_bind($ds, utf8_encode($entry[0]['dn']), $password)) {
+	if (ldap_bind($ds, utf8_encode($entry[0]['dn']), $password)) {
 		// We have a bind, a valid login
 
 		foreach (array_keys($search_attr) as $attr) {
