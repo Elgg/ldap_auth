@@ -67,7 +67,7 @@ function ldap_auth_check($config, $username, $password) {
 	$host = $config->hostname;
 
 	// No point continuing
-	if(empty($host)) {
+	if (empty($host)) {
 		error_log("LDAP error: no host configured.");
 		return;
 	}
@@ -91,7 +91,7 @@ function ldap_auth_check($config, $username, $password) {
 	if (!empty($search_attr)) {
 		// $search_attr as in "email:email_address, name:name_name";
 
-		$pairs = array_map('trim',explode(',', $search_attr));
+		$pairs = array_map('trim', explode(',', $search_attr));
 
 		$values = array();
 
@@ -107,7 +107,8 @@ function ldap_auth_check($config, $username, $password) {
 	}
 
 	// Create a connection
-	if ($ds = ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd)) {
+	$ds = ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd);
+	if ($ds) {
 		// Perform a search
 		foreach ($basedn as $this_ldap_basedn) {
 			$ldap_user_info = ldap_auth_do_auth($ds, $this_ldap_basedn, $username, $password, $filter_attr, $search_attr);
@@ -115,7 +116,8 @@ function ldap_auth_check($config, $username, $password) {
 			if($ldap_user_info) {
 				// LDAP login successful
 
-				if ($user = get_user_by_username($username)) {
+				$user = get_user_by_username($username);
+				if ($user) {
 					// User exists, login
 					return login($user);
 				} else {
@@ -130,7 +132,8 @@ function ldap_auth_check($config, $username, $password) {
 
 						($ldap_user_info['mail']) ? $email = $ldap_user_info['mail'] : $email = null;
 
-						if ($guid = register_user($username, $password, $name, $email)) {
+						$guid = register_user($username, $password, $name, $email);
+						if ($guid) {
 							// Registration successful, validate the user
 							set_user_validation_status($guid, true, 'LDAP plugin based validation');
 
@@ -219,17 +222,17 @@ function ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd) {
  * @return mixed array with search attributes or false on error
  */
 function ldap_auth_do_auth($ds, $basedn, $username, $password, $filter_attr, $search_attr) {
-	$sr = ldap_search($ds, $basedn, $filter_attr ."=". $username, array_values($search_attr));
+	$sr = ldap_search($ds, $basedn, $filter_attr . "=" . $username, array_values($search_attr));
 
-	if(!$sr) {
-		error_log('Unable to perform LDAP search: '.ldap_error($ds));
+	if (!$sr) {
+		error_log('Unable to perform LDAP search: ' . ldap_error($ds));
 
 		return false;
 	}
 
 	$entry = ldap_get_entries($ds, $sr);
 
-	if(!$entry or !$entry[0]) {
+	if (!$entry or !$entry[0]) {
 		return false; // didn't find username
 	}
 
