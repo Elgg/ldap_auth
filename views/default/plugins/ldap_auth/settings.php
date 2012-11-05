@@ -39,7 +39,7 @@ $ldap_bind_dn_input = elgg_view('input/text', array(
 
 $ldap_bind_pwd_label = elgg_echo('ldap_auth:settings:label:ldap_bind_pwd');
 $ldap_bind_pwd_descr = elgg_echo('ldap_auth:settings:help:ldap_bind_pwd');
-$ldap_bind_pwd_input = elgg_view('input/text', array(
+$ldap_bind_pwd_input = elgg_view('input/password', array(
 	'name' => "params[ldap_bind_pwd]",
 	'value' => $vars['entity']->ldap_bind_pwd,
 ));
@@ -108,8 +108,8 @@ echo <<<FORM
 		</div>
 		
 		<div>
-			<label>$ldap_bind_pwd_label</label>
-			$ldap_bind_pwd_input
+			<label>$ldap_bind_pwd_label</label><br />
+			$ldap_bind_pwd_input<br />
 			$ldap_bind_pwd_descr
 		</div>
 		
