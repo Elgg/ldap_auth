@@ -19,7 +19,7 @@ function ldap_auth_init() {
 }
 
 // Register the initialisation function
-register_elgg_event_handler('init','system','ldap_auth_init');
+elgg_register_event_handler('init', 'system', 'ldap_auth_init');
 
 /**
  * LDAP authentication
@@ -35,7 +35,7 @@ function ldap_auth_authenticate($credentials = null) {
 	}
 
 	// Get configuration settings
-	$config = find_plugin_settings('ldap_auth');
+	$config = elgg_get_plugin_from_id('ldap_auth');
 
 	// Nothing to do if not configured
 	if (!$config) {
@@ -80,8 +80,8 @@ function ldap_auth_check($config, $username, $password) {
 	$basedn      = $config->basedn;
 	$filter_attr = $config->filter_attr;
 	$search_attr = $config->search_attr;
-	$bind_dn     = utf8_encode($config->ldap_bind_dn);
-	$bind_pwd    = utf8_encode($config->ldap_bind_pwd);
+	$bind_dn     = $config->ldap_bind_dn;
+	$bind_pwd    = $config->ldap_bind_pwd;
 	$user_create = $config->user_create;
 
 	($user_create == 'on') ? $user_create = true : $user_create = false;
@@ -143,7 +143,7 @@ function ldap_auth_check($config, $username, $password) {
 					$guid = register_user($username, $password, $name, $email);
 					if ($guid) {
 						// Registration successful, validate the user
-						set_user_validation_status($guid, true, 'LDAP plugin based validation');
+						elgg_set_user_validation_status($guid, true, 'LDAP plugin based validation');
 
 						// Success, credentials valid and account has been created
 						ldap_close($ds);
@@ -180,6 +180,17 @@ function ldap_auth_check($config, $username, $password) {
  */
 function ldap_auth_connect($host, $port, $version, $bind_dn, $bind_pwd) {
 	$ds = ldap_connect($host, $port);
+/*
+	echo "<pre>";
+	var_dump($host);
+	var_dump($port);
+	var_dump($version);
+	var_dump($bind_dn);
+	var_dump($bind_pwd);
+	var_dump($ds);
+	echo "</pre>";
+	die();
+	*/
 
 	if ($ds === false) {
 		error_log('LDAP: unable to connect to the LDAP server: ' . ldap_error($ds));
