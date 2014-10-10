@@ -145,14 +145,18 @@ function ldap_auth_check($config, $username, $password) {
 						$new_user = get_entity($user_guid);
 
 						// allow plugins to respond to registration
-						$params = array('user' => $new_user);
+						$params = array(
+							'user' => $new_user,
+							'ldap_entry' => $ldap_user_info,
+						);
+
 						if (!elgg_trigger_plugin_hook('register', 'user', $params, TRUE)) {
 							// For some reason one of the plugins returned false.
 							// This most likely means that something went terribly
 							// wrong and we will have to remove the user.
 							$new_user->delete();
 							register_error(elgg_echo('registerbad'));
-							
+
 							return false;
 						}
 
