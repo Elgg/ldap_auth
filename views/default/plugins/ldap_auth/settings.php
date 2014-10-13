@@ -30,18 +30,18 @@ $version_input = elgg_view('input/dropdown', array(
 	'options' => array(1, 2, 3)
 ));
 
-$ldap_bind_dn_label = elgg_echo('ldap_auth:settings:label:ldap_bind_dn');
-$ldap_bind_dn_descr = elgg_echo('ldap_auth:settings:help:ldap_bind_dn');
-$ldap_bind_dn_input = elgg_view('input/text', array(
-	'name' => "params[ldap_bind_dn]",
-	'value' => $vars['entity']->ldap_bind_dn,
+$bind_dn_label = elgg_echo('ldap_auth:settings:label:bind_dn');
+$bind_dn_descr = elgg_echo('ldap_auth:settings:help:bind_dn');
+$bind_dn_input = elgg_view('input/text', array(
+	'name' => "params[bind_dn]",
+	'value' => $vars['entity']->bind_dn,
 ));
 
-$ldap_bind_pwd_label = elgg_echo('ldap_auth:settings:label:ldap_bind_pwd');
-$ldap_bind_pwd_descr = elgg_echo('ldap_auth:settings:help:ldap_bind_pwd');
-$ldap_bind_pwd_input = elgg_view('input/password', array(
-	'name' => "params[ldap_bind_pwd]",
-	'value' => $vars['entity']->ldap_bind_pwd,
+$bind_password_label = elgg_echo('ldap_auth:settings:label:bind_password');
+$bind_password_descr = elgg_echo('ldap_auth:settings:help:bind_password');
+$bind_password_input = elgg_view('input/password', array(
+	'name' => "params[bind_password]",
+	'value' => $vars['entity']->bind_password,
 ));
 
 $basedn_label = elgg_echo('ldap_auth:settings:label:basedn');
@@ -68,7 +68,7 @@ $search_attr_input = elgg_view('input/text', array(
 $user_create_label = elgg_echo('ldap_auth:settings:label:user_create');
 $user_create_descr = elgg_echo('ldap_auth:settings:help:user_create');
 $user_create_input = elgg_view('input/dropdown', array(
-	'name' => "params[user_create]", 
+	'name' => "params[user_create]",
 	'value' => $vars['entity']->user_create,
 	'options' => array('on', 'off'),
 ));
@@ -85,52 +85,52 @@ echo <<<FORM
 			$hostname_input
 			$hostname_descr
 		</div>
-		
+
 		<div>
 			<label>$port_label</label>
 			$port_input
 			$port_descr
 		</div>
-		
+
 		<div>
 			<label>$version_label</label>
 			$version_input<br />
 			$version_descr
 		</div>
 	</fieldset>
-	
+
 	<fieldset style="border: 1px solid; padding: 15px; margin: 0 10px 0 10px">
 		<legend>$legend2</legend>
 		<div>
-			<label>$ldap_bind_dn_label</label>
-			$ldap_bind_dn_input
-			$ldap_bind_dn_descr
+			<label>$bind_dn_label</label>
+			$bind_dn_input
+			$bind_dn_descr
 		</div>
-		
+
 		<div>
-			<label>$ldap_bind_pwd_label</label><br />
-			$ldap_bind_pwd_input<br />
-			$ldap_bind_pwd_descr
+			<label>$bind_password_label</label><br />
+			$bind_password_input<br />
+			$bind_password_descr
 		</div>
-		
+
 		<div>
 			<label>$basedn_label</label>
 			$basedn_input
 			$basedn_descr
 		</div>
-		
+
 		<div>
 			<label>$filter_attr_label</label>
 			$filter_attr_input<br />
 			$filter_attr_descr
 		</div>
-		
+
 		<div>
 			<label>$search_attr_label</label>
 			$search_attr_input<br />
 			$search_attr_descr
 		</div>
-		
+
 		<div>
 			<label>$user_create_label</label>
 			$user_create_input<br />
