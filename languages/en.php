@@ -23,7 +23,7 @@ return array(
 		<blockquote><i>firstname:givenname, lastname:sn, mail:mail</i></blockquote>",
 	'ldap_auth:settings:label:user_create' => "Create users",
 	'ldap_auth:settings:help:user_create' => "Optionally, an account can get created when a LDAP authentication was succesful.",
-	'ldap_auth:connection_error' => "Unable to connect to LDAP server. Please contact system administrator",
+	'ldap_auth:connection_error' => "Unable to connect to validation server. Please contact system administrator",
 	'ldap_auth:no_account' => "Your credentials are valid, but no account was found - please contact the system administrator",
 	'ldap_auth:no_register' => 'An account could not get created for you - please contact the system administrator.'
 );
