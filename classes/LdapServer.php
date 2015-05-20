@@ -2,15 +2,18 @@
 
 class LdapServer {
 
-	private $hostname;
-	private $port;
-	private $version;
-	private $link;
-	private $basedn;
-	private $bind_dn;
-	private $bind_password;
-	private $search_attr;
-	private $filter_attr;
+public $hostname;
+    public $port;
+    public $version;
+    public $link;
+    public $basedn;
+    public $bind_dn;
+    private $bind_password;
+    public $search_attr;
+    public $filter_attr;
+    public $group_dn;
+    public $group_attr;
+
 
 	/**
 	 * Set values from the provided settings
@@ -18,30 +21,33 @@ class LdapServer {
 	 * @param object $settings
 	 */
 	public function __construct($settings) {
-		$fields = array(
-			'hostname',
-			'port',
-			'version',
-			'basedn',
-			'bind_dn',
-			'bind_password',
-			'search_attr',
-			'filter_attr',
-		);
+        $fields = array(
+            'hostname',
+            'port',
+            'version',
+            'basedn',
+            'bind_dn',
+            'bind_password',
+            'search_attr',
+            'filter_attr',
+            'group_dn',
+            'group_attr',
+        );
+        
+        foreach ($fields as $field) {
+            if (empty($settings->$field)) {
+                if ($field!='group_dn' && $field!='group_attr') {
+                    $message = "LDAP: missing settings value for $field.";
+                    elgg_log($message, 'ERROR');
+                    throw new Exception($message);
+                }
+            }
+            $this->$field = $settings->$field;
+        }
+        
+        return $this;
+    }
 
-		foreach ($fields as $field) {
-			if (empty($settings->$field)) {
-				$message = "LDAP: missing settings value for $field.";
-
-				elgg_log($message, 'ERROR');
-				throw new Exception($message);
-			}
-
-			$this->$field = $settings->$field;
-		}
-
-		return $this;
-	}
 
 	/**
 	 * Bind to an LDAP directory
@@ -155,4 +161,47 @@ class LdapServer {
 
 		return $search_attr;
 	}
+	
+	/**
+    * Check if a user is a member of a group
+    *
+    * @param string $userdn The user dn to check membership
+    * @return boolean
+    */
+    public function isMember($userdn) {
+        if (empty($this->group_dn)) {
+            //No group in settings so exit this function
+            //elgg_log("No LDAP group in settings", 'NOTICE');
+            return true;
+        }
+
+        if (empty($this->group_attr)) {
+            // There is a group in settings but no parameter. Assuming member
+            $this->group_attr="member";
+        }
+
+        $filter="($this->group_attr=$userdn)";
+
+        $search_attributes = $this->getSearchAttr();
+
+        $query = ldap_search($this->getLink(), $this->group_dn, $filter, array_values($search_attributes));
+
+        if (!$query) {
+            //elgg_log("Query in isMember function is null");
+            return false;
+        }
+
+        $result = ldap_get_entries($this->getLink(), $query);
+
+        if (empty($result['count'])) {
+            //elgg_log("LDAP search for filter \"$filter\" on \"$this->group_dn\" returned no results.", 'NOTICE');
+            return false;
+        } else {
+            $resultdn=$result[0]["dn"];
+			//a member entry was found on the group for this userdn
+            //elgg_log("LDAP search for filter \"$filter\" on \"$this->group_dn\" returned $resultdn", 'NOTICE');
+        }
+
+        return true;
+    }
 }
