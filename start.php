@@ -87,13 +87,13 @@ function ldap_auth_authenticate($credentials) {
 	}
 
 	// Check if the user is a member of the group, in case a groupOfNames is included in settings
-    $result2 = $server->isMember($result['dn']);
-    if (!$result2) {
-        //elgg_log("User found in directory and its bind completed ok, but is not a member of the required group","NOTICE");
-        register_error(elgg_echo('ldap_auth:not_in_group'));
-        return false;
-    }
-	
+	$result2 = $server->isMember($result['dn']);
+	if (!$result2) {
+		//elgg_log("User found in directory and its bind completed ok, but is not a member of the required group","NOTICE");
+		register_error(elgg_echo('ldap_auth:not_in_group'));
+		return false;
+	}
+
 	$user = get_user_by_username($username);
 
 	if ($user) {

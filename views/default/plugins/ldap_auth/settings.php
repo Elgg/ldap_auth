@@ -68,15 +68,15 @@ $search_attr_input = elgg_view('input/text', array(
 $group_dn_label = elgg_echo('ldap_auth:settings:label:group_dn');
 $group_dn_descr = elgg_echo('ldap_auth:settings:help:group_dn');
 $group_dn_input = elgg_view('input/text', array(
-        'name' => "params[group_dn]",
-        'value' => $vars['entity']->group_dn,
+	'name' => "params[group_dn]",
+	'value' => $vars['entity']->group_dn,
 ));
 
 $group_attr_label = elgg_echo('ldap_auth:settings:label:group_attr');
 $group_attr_descr = elgg_echo('ldap_auth:settings:help:group_attr');
 $group_attr_input = elgg_view('input/text', array(
-        'name' => "params[group_attr]",
-        'value' => $vars['entity']->group_attr,
+	'name' => "params[group_attr]",
+	'value' => $vars['entity']->group_attr,
 ));
 
 $user_create_label = elgg_echo('ldap_auth:settings:label:user_create');
@@ -147,10 +147,10 @@ echo <<<FORM
 
 		<div>
 			<label>$group_dn_label</label>
-            $group_dn_input
-            $group_dn_descr
+			$group_dn_input
+			$group_dn_descr
 		</div>
-
+		
 		<div>
 			<label>$group_attr_label</label>
 			$group_attr_input
