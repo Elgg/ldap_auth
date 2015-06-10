@@ -33,12 +33,12 @@ class LdapServer {
 			'group_dn',
 			'group_attr',
 		);
-        
-        foreach ($fields as $field) {
-            if (empty($settings->$field)) {
-                if ($field!='group_dn' && $field!='group_attr') {
-                    $message = "LDAP: missing settings value for $field.";
-                    elgg_log($message, 'ERROR');
+		
+		foreach ($fields as $field) {
+			if (empty($settings->$field)) {
+				if ($field!='group_dn' && $field!='group_attr') {
+					$message = "LDAP: missing settings value for $field.";
+					elgg_log($message, 'ERROR');
                     throw new Exception($message);
                 }
             }
