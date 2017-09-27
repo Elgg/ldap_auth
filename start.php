@@ -89,6 +89,9 @@ function ldap_auth_authenticate($credentials) {
 	$user = get_user_by_username($username);
 
 	if ($user) {
+		if (check_rate_limit_exceeded($user->guid)) {
+			throw new LoginException(elgg_echo('LoginException:AccountLocked'));
+		}
 		return login($user);
 	}
 
